@@ -1,0 +1,64 @@
+name: smoke-test
+
+# Proves the starter pipeline runs on the bundled sample, and blocks any commit
+# that accidentally includes a real dataset.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the full pipeline on the sample
+        run: python scripts/run_all.py
+
+      - name: Check expected outputs exist
+        run: |
+          test -f outputs/model_results.json
+          test -f outputs/refresh_queue.csv
+          test -f outputs/model_report.md
+          echo "Pipeline produced expected outputs."
+
+  data-leak-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fail if a dataset other than the anonymized starter slice was committed
+        run: |
+          set -e
+          # Any parquet / archive is an instant fail.
+          if git ls-files | grep -E '\.(parquet|zip|tar|tar\.gz|feather)$'; then
+            echo "::error::Committed a dataset archive. Datasets must not be committed."; exit 1
+          fi
+          # Only one CSV is allowed under data/: the anonymized starter slice.
+          bad=$(git ls-files '*.csv' | grep -v -E '^(data/raw/content_refresh_anonymized\.csv|outputs/refresh_queue_sample\.csv)$' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Unexpected data file(s) committed:"; echo "$bad"; exit 1
+          fi
+          echo "No leaked datasets."
+
+      - name: Check submission/paper_url.txt format
+        run: |
+          f=submission/paper_url.txt
+          if [ ! -f "$f" ]; then echo "::warning::$f missing - add your deployed paper URL there for the capstone."; exit 0; fi
+          line=$(head -1 "$f" | tr -d '[:space:]')
+          if [ "$line" = "PASTE-YOUR-DEPLOYED-PAPER-URL-HERE" ]; then echo "paper_url.txt still placeholder - fine until your capstone ships."; exit 0; fi
+          case "$line" in
+            https://*) echo "paper_url.txt looks good: $line";;
+            *) echo "::warning::$f should contain exactly one https:// URL on the first line.";;
+          esac
