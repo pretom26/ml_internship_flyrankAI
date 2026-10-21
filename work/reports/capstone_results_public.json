@@ -1,0 +1,188 @@
+{
+  "study": "FlyRank ML Internship · Lane 2 · Refresh / Content Opportunity Scoring",
+  "analysis_status": "measured_in_authorized_colab",
+  "dataset": {
+    "release": "FlyRank internship warehouse v20260703",
+    "source_tables": [
+      "fact_content_daily_performance (month-partitioned)"
+    ],
+    "feature_start": "2026-04-01",
+    "feature_end_exclusive": "2026-05-01",
+    "outcome_start": "2026-05-01",
+    "outcome_end_exclusive": "2026-06-01",
+    "feature_month": "2026-04",
+    "outcome_month": "2026-05",
+    "eligibility": ">= 100 feature-month impressions and >= 5 GSC-observed days in each month",
+    "label": "Next-month impressions per calendar day >30% below feature-month impressions per calendar day",
+    "excluded": "No next-month record, insufficient GSC observations, low feature exposure, missing identifiers or labels, duplicate client-content pairs",
+    "missing_target": "Never assume a missing outcome-month row represents zero impressions",
+    "feature_days": 30,
+    "outcome_days": 31
+  },
+  "observation_grain": "pseudonymized client × content page (one feature/outcome month-pair)",
+  "eligible_rows": 107144,
+  "training_rows": 103980,
+  "holdout_rows": 3164,
+  "client_groups_total": 47,
+  "training_client_groups": 37,
+  "holdout_client_groups": 10,
+  "client_group_overlap": 0,
+  "holdout_prevalence": 0.28697850821744625,
+  "random_forest": {
+    "prevalence": 0.28697850821744625,
+    "average_precision": 0.6778232226135619,
+    "roc_auc": 0.8310091347205298,
+    "precision_at_10": 0.9,
+    "lift_at_10": 3.1361233480176214,
+    "precision_at_20": 0.95,
+    "lift_at_20": 3.310352422907489,
+    "precision_at_50": 0.94,
+    "lift_at_50": 3.2755066079295156,
+    "precision_at_100": 0.94,
+    "lift_at_100": 3.2755066079295156
+  },
+  "rule_baseline": {
+    "prevalence": 0.28697850821744625,
+    "average_precision": 0.6089511620025243,
+    "roc_auc": 0.7448846639016465,
+    "precision_at_10": 1.0,
+    "lift_at_10": 3.484581497797357,
+    "precision_at_20": 1.0,
+    "lift_at_20": 3.484581497797357,
+    "precision_at_50": 0.98,
+    "lift_at_50": 3.41488986784141,
+    "precision_at_100": 0.93,
+    "lift_at_100": 3.2406607929515423
+  },
+  "rf_minus_baseline_bootstrap": {
+    "precision_at_50": {
+      "delta": -0.040000000000000036,
+      "low_95": -0.09999999999999998,
+      "high_95": 0.060499999999999596,
+      "replicates": 400
+    },
+    "average_precision": {
+      "delta": 0.06887206061103757,
+      "low_95": -0.010945054088799127,
+      "high_95": 0.12090293190480451,
+      "replicates": 400
+    },
+    "roc_auc": {
+      "delta": 0.0861244708188833,
+      "low_95": 0.009192408470338432,
+      "high_95": 0.1110103146421384,
+      "replicates": 400
+    }
+  },
+  "training_only_cv": {
+    "folds": 3,
+    "rf_precision_at_50_mean": 1.0,
+    "rule_precision_at_50_mean": 0.9733333333333333,
+    "rf_average_precision_mean": 0.7685437808319519,
+    "rule_average_precision_mean": 0.7053374753775744
+  },
+  "secondary_later_window": {
+    "status": "evaluated",
+    "feature_window": "2026-05",
+    "label_window": "2026-06",
+    "n_rows": 6637,
+    "n_groups": 9,
+    "rf_metrics": {
+      "prevalence": 0.3314750640349556,
+      "average_precision": 0.6326991505074969,
+      "roc_auc": 0.7597357960948224,
+      "precision_at_10": 0.8,
+      "lift_at_10": 2.4134545454545453,
+      "precision_at_20": 0.7,
+      "lift_at_20": 2.111772727272727,
+      "precision_at_50": 0.86,
+      "lift_at_50": 2.594463636363636,
+      "precision_at_100": 0.87,
+      "lift_at_100": 2.624631818181818
+    },
+    "rule_metrics": {
+      "prevalence": 0.3314750640349556,
+      "average_precision": 0.6021402005254807,
+      "roc_auc": 0.7231666052000738,
+      "precision_at_10": 0.8,
+      "lift_at_10": 2.4134545454545453,
+      "precision_at_20": 0.9,
+      "lift_at_20": 2.7151363636363635,
+      "precision_at_50": 0.96,
+      "lift_at_50": 2.8961454545454544,
+      "precision_at_100": 0.96,
+      "lift_at_100": 2.8961454545454544
+    },
+    "note": "Same fixed model and original held-out client groups; no refitting/tuning. Training labels from May are contemporaneous with the secondary check's May features, but client groups are disjoint. This is a later-outcome robustness check, not a wholly independent prospective trial."
+  },
+  "fixed_random_forest": {
+    "n_estimators": 140,
+    "max_depth": 10,
+    "min_samples_leaf": 35,
+    "max_features": "sqrt",
+    "random_state": 42
+  },
+  "rule_weights": {
+    "impression_exposure": 0.4,
+    "feature_month_slowdown": 0.35,
+    "below_position_peer_ctr": 0.25
+  },
+  "feature_columns": [
+    "feature_impressions",
+    "feature_clicks",
+    "feature_ctr",
+    "feature_position",
+    "feature_observed_days",
+    "feature_momentum",
+    "log_impressions",
+    "log_clicks",
+    "impressions_per_observed_day",
+    "downward_momentum",
+    "decline_x_log_exposure",
+    "ctr_x_log_exposure",
+    "position_tier"
+  ],
+  "prohibited_columns": [
+    "client_id",
+    "content_id",
+    "early_impressions",
+    "label",
+    "late_impressions",
+    "outcome_impressions",
+    "outcome_observed_days",
+    "target_impressions",
+    "target_observed_days"
+  ],
+  "top50_rule_reason_counts": {
+    "VISIBLE_SLOWDOWN": 31,
+    "LOW_EVIDENCE": 19
+  },
+  "top50_rule_evidence_counts": {
+    "moderate": 27,
+    "limited": 19,
+    "higher-volume": 4
+  },
+  "top50_rule_priority_bands": [
+    {
+      "band": "1–10",
+      "pages": 10,
+      "slowdown": 10,
+      "monitor": 0
+    },
+    {
+      "band": "11–25",
+      "pages": 15,
+      "slowdown": 7,
+      "monitor": 8
+    },
+    {
+      "band": "26–50",
+      "pages": 25,
+      "slowdown": 14,
+      "monitor": 11
+    }
+  ],
+  "evaluation_status": "Historical April–May client-held-out period was inspected in development; reported scores are descriptive and should not be called untouched confirmatory tests.",
+  "policy": "Rule score ranks the initial editorial review queue; Random Forest is an additional risk-ranking comparison. No intervention is triggered automatically.",
+  "created_utc": "2026-10-21T07:41:50Z"
+}
