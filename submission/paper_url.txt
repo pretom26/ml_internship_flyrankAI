@@ -1,1 +1,1 @@
-PASTE-YOUR-DEPLOYED-PAPER-URL-HERE
+https://pretom26.github.io/ml_internship_flyrankAI/
